@@ -1,9 +1,14 @@
 ## Installation
 
+Clone repo somewhere:
 ```shell
-cd ~/.config/awesome # awesomewm rc.lua location
+cd ~/tmp
 git clone https://github.com/Perlovka/awesomewm-modules.git
 
+```
+Copy files to the directory where awesome rc.lua is located:
+```shell
+cp -ar /tmp/awesomewm-modules/gears ~/.config/awesome/
 ```
 
 ## Documentation
