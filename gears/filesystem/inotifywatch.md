@@ -3,6 +3,24 @@ Class `gears.filesystem.inotifywatch`
 
 Watch filesystem for changes
 
+### Dependencies
+
+Linotify should be installed on your system
+https://github.com/hoelzro/linotify
+
+Use your system package manager or luarocks to install.
+
+### Gentoo
+
+Can be installed from overlay:  https://github.com/Perlovka/portage-overlay/tree/master/dev-lua/lua-inotify
+
+#### Luarocks install:
+
+```shell
+root@localhost # luarocks install inotify
+
+```
+
 ### Usage:
 ```lua
 -- Watch directory for created files, every 5 seconds:
