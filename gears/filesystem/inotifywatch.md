@@ -10,7 +10,7 @@ https://github.com/hoelzro/linotify
 
 Use your system package manager or luarocks to install.
 
-### Gentoo
+#### Gentoo
 
 Can be installed from overlay:  https://github.com/Perlovka/portage-overlay/tree/master/dev-lua/lua-inotify
 
