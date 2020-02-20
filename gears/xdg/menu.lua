@@ -15,24 +15,8 @@ local dbg = require("gears.debug")
 local menu = {}
 
 --- Create table, that can be used to generate awful.menu
-local function parse_menu(data, mnu, terminalcmd, icon_theme, icon_size)
+local function parse_menu(data, mnu, terminalcmd, gtk_theme, icon_size)
     if not data then return end
-
-    local icon_theme = icon_theme or nil
-    local icon_size = icon_size or 24
-    local gtk_theme
-
-    if not icon_theme then
-        local beautiful = require("beautiful")
-        icon_theme = beautiful.icon_theme or nil
-    end
-
-    if icon_theme then
-        gtk_theme = Gtk.IconTheme.new()
-        Gtk.IconTheme.set_custom_theme(gtk_theme, icon_theme);
-    else
-        gtk_theme = Gtk.IconTheme.get_default()
-    end
 
     for _,item in ipairs(data) do
         local icon = item.Icon or ""
@@ -40,19 +24,19 @@ local function parse_menu(data, mnu, terminalcmd, icon_theme, icon_size)
         -- do not lookup absolute paths
         if not icon:find('^/') then
             -- use flags
-            local iinfo = Gtk.IconTheme.lookup_icon(gtk_theme, item.Icon, icon_size, 0);
+            local icon_info = Gtk.IconTheme.lookup_icon(gtk_theme, item.Icon, icon_size, 0);
             -- fallback icon
-            if not iinfo then
-                iinfo = Gtk.IconTheme.lookup_icon(gtk_theme, "application-default-icon", icon_size, 0)
+            if not icon_info then
+                icon_info = Gtk.IconTheme.lookup_icon(gtk_theme, "application-default-icon", icon_size, 0)
             end
-            if iinfo then
-                icon = Gtk.IconInfo.get_filename(iinfo)
+            if icon_info then
+                icon = Gtk.IconInfo.get_filename(icon_info)
             end
         end
 
         if item.Type == "submenu" then
             local sub = {}
-            parse_menu(item.Items, sub, terminalcmd, icon_theme, icon_size)
+            parse_menu(item.Items, sub, terminalcmd, gtk_theme, icon_size)
             table.insert(mnu, { item.Name, sub, icon })
         elseif (item.Type == "separator") then
             table.insert(mnu, { "---" })
@@ -92,8 +76,24 @@ function menu.new_from_file(file, terminalcmd, icon_theme, icon_size)
         return aw_menu
     end
 
+    local icon_theme = icon_theme or nil
+    local icon_size = icon_size or 24
+    local gtk_theme
+
+    if not icon_theme then
+        local beautiful = require("beautiful")
+        icon_theme = beautiful.icon_theme or nil
+    end
+
+    if icon_theme then
+        gtk_theme = Gtk.IconTheme.new()
+        Gtk.IconTheme.set_custom_theme(gtk_theme, icon_theme);
+    else
+        gtk_theme = Gtk.IconTheme.get_default()
+    end
+
     local data = {}
-    parse_menu(tree.Items, data, terminalcmd, icon_theme, icon_size)
+    parse_menu(tree.Items, data, terminalcmd, gtk_theme, icon_size)
 
     for name,item in pairs(data) do
         aw_menu:add(item)
