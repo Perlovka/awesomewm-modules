@@ -17,7 +17,7 @@ cp -ar /tmp/awesomewm-modules/gears ~/.config/awesome/
 
 **[gears.filesystem.ls](gears/filesystem/ls.md)** &nbsp;&nbsp; List directory content
 
-**[gears.xdg.menu](gears/xdg/menu.md)** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Create awful.menu from .menu file
+**[gears.xdg.menu](gears/xdg/)** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Create awful.menu from .menu file
 
 ### Classes
 
