@@ -74,10 +74,11 @@ local _M = {}
 
 local function get_app_info(app_info, tag)
     local s = L.g_desktop_app_info_get_string(app_info, tag)
-    if s ~= nil then
-        return ffi.string(s)
+    if tag == "Terminal" then
+        return (s ~= nil and ffi.string(s) == 'true') and true or false
+    else
+        return (s ~= nil) and ffi.string(s) or "Could not get "..tag
     end
-    return "Could not get "..tag
 end
 
 local function parse_directory(directory, data)
@@ -111,7 +112,8 @@ local function parse_directory(directory, data)
                     Type = "app",
                     Name = get_app_info(app_info, "Name"),
                     Icon = get_app_info(app_info, "Icon"),
-                    Exec = get_app_info(app_info, "Exec")
+                    Exec = get_app_info(app_info, "Exec"),
+                    Terminal = get_app_info(app_info, "Terminal")
                 })
             elseif t == L.GMENU_TREE_ITEM_SEPARATOR then
                 if not data.Items then
