@@ -2,7 +2,7 @@
 
 Clone repo somewhere:
 ```shell
-cd ~/tmp
+cd /tmp
 git clone https://github.com/Perlovka/awesomewm-modules.git
 
 ```
@@ -16,6 +16,8 @@ cp -ar /tmp/awesomewm-modules/gears ~/.config/awesome/
 ### Modules
 
 **[gears.filesystem.ls](gears/filesystem/ls.md)** &nbsp;&nbsp; List directory content
+
+**[gears.xdg.menu](gears/xdg/menu.md)** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Create awful.menu from .menu file
 
 ### Classes
 

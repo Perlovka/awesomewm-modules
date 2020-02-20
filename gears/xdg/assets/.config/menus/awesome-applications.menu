@@ -1,0 +1,128 @@
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+  "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+
+<Menu>
+    <Name>Applications</Name>
+
+    <DefaultAppDirs/>
+    <DefaultDirectoryDirs/>
+    <DefaultMergeDirs/>
+
+    <!-- libgnome-menu does not respect DefaultMergeDirs?
+        Need investigation -->
+    <MergeDir>/etc/xdg/menus/applications-merged/</MergeDir>
+
+    <Layout>
+        <Merge type="menus" />
+        <Menuname>Other</Menuname>
+        <Merge type="files" />
+    </Layout>
+
+    <Menu>
+        <Name>Accessories</Name>
+        <Directory>awesome-accessories.directory</Directory>
+        <Include>
+            <Or>
+                <Category>Accessibility</Category>
+                <Category>Core</Category>
+                <Category>Legacy</Category>
+                <Category>Utility</Category>
+            </Or>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Development</Name>
+        <Directory>awesome-development.directory</Directory>
+        <Include>
+            <Category>Development</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Education</Name>
+        <Directory>awesome-education.directory</Directory>
+        <Include>
+            <Category>Education</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Games</Name>
+        <Directory>awesome-games.directory</Directory>
+        <Include>
+            <Category>Game</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Graphics</Name>
+        <Directory>awesome-graphics.directory</Directory>
+        <Include>
+            <Category>Graphics</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Multimedia</Name>
+        <Directory>awesome-multimedia.directory</Directory>
+        <Include>
+            <Category>Audio</Category>
+            <Category>Video</Category>
+            <Category>AudioVideo</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Network</Name>
+        <Directory>awesome-network.directory</Directory>
+        <Include>
+            <Category>Network</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Office</Name>
+        <Directory>awesome-office.directory</Directory>
+        <Include>
+            <Category>Office</Category>
+        </Include>
+    </Menu>
+<!--
+    <Menu>
+        <Name>Science</Name>
+        <Directory>awesome-science.directory</Directory>
+        <Include>
+            <Category>Science</Category>
+        </Include>
+    </Menu>
+-->
+    <Menu>
+        <Name>Settings</Name>
+        <Directory>awesome-settings.directory</Directory>
+        <Include>
+            <Category>Settings</Category>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>System</Name>
+        <Directory>awesome-system.directory</Directory>
+        <Include>
+            <Or>
+                <Category>Emulator</Category>
+                <Category>System</Category>
+            </Or>
+        </Include>
+    </Menu>
+
+    <Menu>
+        <Name>Other</Name>
+        <Directory>awesome-other.directory</Directory>
+        <OnlyUnallocated/>
+        <Include>
+            <All/>
+        </Include>
+    </Menu>
+
+</Menu>
