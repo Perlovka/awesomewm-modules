@@ -7,7 +7,6 @@
 ---------------------------------------------------------------------------
 
 local gm = require("gears.xdg.libgnome-menu")
-local Gtk = require("lgi").Gtk
 local awful_menu = require("awful.menu")
 
 local dbg = require("gears.debug")
@@ -15,33 +14,29 @@ local dbg = require("gears.debug")
 local menu = {}
 
 --- Create table, that can be used to generate awful.menu
-local function parse_menu(data, mnu, terminalcmd, gtk_theme, icon_size)
+local function parse_menu(data, mnu, terminalcmd, icon_theme)
     if not data then return end
 
     for _,item in ipairs(data) do
-        local icon = item.Icon or ""
-        -- TODO: async icon lookup
-        -- do not lookup absolute paths
-        if not icon:find('^/') then
-            -- use flags
-            local icon_info = Gtk.IconTheme.lookup_icon(gtk_theme, item.Icon, icon_size, 0);
-            -- fallback icon
-            if not icon_info then
-                icon_info = Gtk.IconTheme.lookup_icon(gtk_theme, "application-default-icon", icon_size, 0)
-            end
-            if icon_info then
-                icon = Gtk.IconInfo.get_filename(icon_info)
+        local icon = nil
+
+        if icon_theme then
+            icon = item.Icon or "application-default-icon"
+            -- do not lookup absolute paths
+            if not icon:find('^/') then
+                -- TODO: async icon lookup
+                icon = icon_theme:get_icon_path(icon, "application-default-icon")
             end
         end
 
         if item.Type == "submenu" then
             local sub = {}
-            parse_menu(item.Items, sub, terminalcmd, gtk_theme, icon_size)
+            parse_menu(item.Items, sub, terminalcmd, icon_theme)
             table.insert(mnu, { item.Name, sub, icon })
         elseif (item.Type == "separator") then
             table.insert(mnu, { "---" })
         else
-            -- Substitute/drop some Exec special codes
+            -- substitute/drop some Exec special codes
             -- http://standards.freedesktop.org/desktop-entry-spec/1.1/ar01s06.html
             local command = item.Exec:gsub('%%[fikuFU]', '')
             command = command:gsub('%%c', item.Name)
@@ -61,12 +56,10 @@ end
 --- Create awful.menu from applications.menu file.
 -- @param file Path to applications.menu file.
 -- @param terminalcmd Terminal command to execute for terminal applications, e.g 'urxvt -e'.
--- @param icon_theme Icon theme name. If not set, beautiful.icon_theme or
---  default Gtk theme will be used.
--- @param icon_size Preferred icon size. Default 24.
+-- @param icon_theme icon_theme object
 -- @return awful.menu instance.
 -- @staticfct gears.xdg.menu.new_from_file
-function menu.new_from_file(file, terminalcmd, icon_theme, icon_size)
+function menu.new_from_file(file, terminalcmd, icon_theme)
 
     local tree, err = gm.new_for_path(file)
     local aw_menu = awful_menu()
@@ -76,24 +69,8 @@ function menu.new_from_file(file, terminalcmd, icon_theme, icon_size)
         return aw_menu
     end
 
-    local icon_theme = icon_theme or nil
-    local icon_size = icon_size or 24
-    local gtk_theme
-
-    if not icon_theme then
-        local beautiful = require("beautiful")
-        icon_theme = beautiful.icon_theme or nil
-    end
-
-    if icon_theme then
-        gtk_theme = Gtk.IconTheme.new()
-        Gtk.IconTheme.set_custom_theme(gtk_theme, icon_theme);
-    else
-        gtk_theme = Gtk.IconTheme.get_default()
-    end
-
     local data = {}
-    parse_menu(tree.Items, data, terminalcmd, gtk_theme, icon_size)
+    parse_menu(tree.Items, data, terminalcmd, icon_theme)
 
     for name,item in pairs(data) do
         aw_menu:add(item)
