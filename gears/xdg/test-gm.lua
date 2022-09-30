@@ -7,14 +7,20 @@ local gm = require("libgnome-menu")
 
 local lgi = require("lgi")
 local Gtk = lgi.Gtk
+local Gio = lgi.Gio
+
+local is_gtk4 = Gtk.version >= "4"
 
 local menu_file = os.getenv("HOME") .. "/.config/menus/awesome-applications.menu"
-local dbg = require("gears.debug")
+local dump = require("gears.debug").dump
 
---local data, err = gm.new_for_path("/etc/xdg/menus/gnome-applications.menu")
---local data, err = gm.new_for_path("")
 
-local data, err = gm.new_for_path(menu_file)
+
+--local data, err = gm:new("/etc/xdg/menus/gnome-applications.menu")
+local data, err = gm:new(menu_file, nil, function() print("z") end)
+
+--print(menu_file)
+--dump(data)
 
 if not data then
     print(err)
@@ -25,36 +31,51 @@ local function create_menu(data, mnu)
     if not data then return end
 
     local gtheme = Gtk.IconTheme.new()
-    Gtk.IconTheme.set_custom_theme(gtheme, "ACYLS");
+    if not is_gtk4 then
+        Gtk.IconTheme.set_custom_theme(gtheme, "ACYLS");
+    else
+        Gtk.IconTheme.set_theme_name(gtheme, "ACYLS");
+    end
 
     for _,item in ipairs(data) do
-            local icon = item.Icon or ""
+--            dump(item)
+            local icon_name = item.Icon or ""
             -- TODO: async icon lookup
             -- do not lookup absolute paths
-            if not icon:find('^/') then
+            if not icon_name:find('^/') then
+                print("Lookup", icon_name)
                 -- use flags
-                local iinfo = Gtk.IconTheme.lookup_icon(gtheme, item.Icon, 24, 0);
-                if iinfo then
-                    icon = Gtk.IconInfo.get_filename(iinfo)
+                if not is_gtk4 then
+                    local icon_info = Gtk.IconTheme.lookup_icon(gtheme, icon_name, 24, 0);
+                    if icon_info then
+                        icon_path = Gtk.IconInfo.get_filename(icon_info)
+                    end
+                else
+                    icon = Gtk.IconTheme.lookup_icon(gtheme, icon_name, {}, 24, 1, 0, 0);
+                    if icon then
+                        icon_path = Gtk.IconPaintable.get_file(icon)
+                        if icon_path then
+                            icon_path = Gio.File.get_path(icon_path)
+                        end
+                    end
                 end
             end
 
         if (item.Type == "submenu") then
             local sub = {}
+--            dump(item.Items)
             create_menu(item.Items, sub)
-            table.insert(mnu, { item.Name, sub, icon })
+            table.insert(mnu, { item.Name, sub, icon_path })
         elseif (item.Type == "separator") then
             table.insert(mnu, { "---" })
         else
-            table.insert(mnu, { item.Name, item.Exec, icon })
+            table.insert(mnu, { item.Name, item.Exec, icon_path })
         end
     end
 end
 
 local mnu = {}
 
---dbg.dump(data)
-
 create_menu(data.Items, mnu)
 
-dbg.dump(mnu)
+dump(mnu)

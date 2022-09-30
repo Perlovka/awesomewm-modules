@@ -10,10 +10,8 @@ XDG library
 
 ## Documentation
 
-### Modules
-
-**[menu](menu.md)** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Create [awful.menu](https://awesomewm.org/apidoc/popups_and_bars/awful.menu.html) instance from .menu file
-
 ### Classes
 
-**[icon_theme](icon_theme.md)** &nbsp;&nbsp; Use XDG compliant icon themes
+**[icon_theme](icon_theme.md)** &emsp;&emsp;&emsp;&emsp;&nbsp;Create XDG compliant icon theme using lgi.Gtk
+
+**[menu](menu.md)** &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Create dynamic [awful.menu](https://awesomewm.org/apidoc/popups_and_bars/awful.menu.html) from XDG .menu file using [libgnome-menu](https://github.com/GNOME/gnome-menus/tree/mainline/libmenu)

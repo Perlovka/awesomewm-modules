@@ -2,7 +2,7 @@
 --- Menu generation module using Freedesktop specifications
 --
 -- @author Michael Perlov
--- @copyright 2020 Michael Perlov
+-- @copyright 2022 Michael Perlov
 -- @module gears.xdg.menu
 ---------------------------------------------------------------------------
 
@@ -53,28 +53,46 @@ local function parse_menu(data, mnu, terminalcmd, icon_theme)
     end
 end
 
+local function update_menu(menu, terminalcmd, icon_theme, menu_after)
+    local data = {}
+
+    parse_menu(menu.tree.Items, data, terminalcmd, icon_theme)
+
+    for i=1,#menu.items do
+        menu:delete(1)
+    end
+
+    for name,item in pairs(data) do
+        menu:add(item)
+    end
+    menu:add(menu_after)
+
+    menu:update()
+
+    print("Menu updated")
+end
+
 --- Create awful.menu from applications.menu file.
 -- @param file Path to applications.menu file.
 -- @param terminalcmd Terminal command to execute for terminal applications, e.g 'urxvt -e'.
 -- @param icon_theme icon_theme object
 -- @return awful.menu instance.
 -- @staticfct gears.xdg.menu.new_from_file
-function menu.new_from_file(file, terminalcmd, icon_theme)
+function menu:new(file, terminalcmd, icon_theme, menu_after)
 
-    local tree, err = gm.new_for_path(file)
     local aw_menu = awful_menu()
+
+    setmetatable(aw_menu, self)
+    self.__index = self
+
+    aw_menu.tree, err = gm:new(file, nil, function() update_menu(aw_menu, terminalcmd, icon_theme, menu_after) end)
 
     if err then
         dbg.dump(err)
         return aw_menu
     end
 
-    local data = {}
-    parse_menu(tree.Items, data, terminalcmd, icon_theme)
-
-    for name,item in pairs(data) do
-        aw_menu:add(item)
-    end
+    update_menu(aw_menu, terminalcmd, icon_theme, menu_after)
 
     return aw_menu
 end

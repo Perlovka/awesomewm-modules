@@ -15,12 +15,12 @@ cp -ar /tmp/awesomewm-modules/gears ~/.config/awesome/
 
 ### Modules
 
-**[gears.filesystem.ls](gears/filesystem/ls.md)** &nbsp;&nbsp; List directory content
-
-**[gears.xdg.menu](gears/xdg/)** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Create awful.menu from .menu file
+**[gears.filesystem.ls](gears/filesystem/ls.md)** &emsp;&emsp;List directory content
 
 ### Classes
 
-**[gears.filesystem.inotifywatch](gears/filesystem/inotifywatch.md)** &nbsp;&nbsp; Watch filesystem for changes
+**[gears.filesystem.inotifywatch](gears/filesystem/inotifywatch.md)** &emsp;Watch filesystem for changes
 
-**[gears.xdg.icon_theme](gears/xdg/icon_theme.md)** &nbsp;&nbsp; Exploring icon theme using lgi.Gtk
+**[gears.xdg.icon_theme](gears/xdg/icon_theme.md)** &emsp;&emsp;&emsp;&emsp;&nbsp;Create XDG compliant icon theme using lgi.Gtk
+
+**[gears.xdg.menu](gears/xdg/menu.md)** &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;Create dynamic [awful.menu](https://awesomewm.org/apidoc/popups_and_bars/awful.menu.html) from XDG .menu file using [libgnome-menu](https://github.com/GNOME/gnome-menus/tree/mainline/libmenu)

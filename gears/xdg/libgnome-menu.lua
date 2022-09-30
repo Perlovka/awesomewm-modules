@@ -3,7 +3,6 @@ local ffi = require("ffi")
 
 -- for command line testing with test-gm.lua
 package.path = package.path .. ';/usr/share/awesome/lib/?.lua'
-local dbg = require("gears.debug")
 
 ffi.cdef[[
 ////    glib.h
@@ -54,6 +53,7 @@ typedef enum
   GMENU_TREE_FLAGS_SORT_DISPLAY_NAME   = 1 << 16
 } GMenuTreeFlags;
 
+GMenuTree *gmenu_tree_new (const char *menu_basename, GMenuTreeFlags  flags);
 GMenuTree *gmenu_tree_new_for_path (const char *menu_path, GMenuTreeFlags  flags);
 gboolean gmenu_tree_load_sync (GMenuTree  *tree, GError **error);
 GMenuTreeDirectory *gmenu_tree_get_root_directory   (GMenuTree  *tree);
@@ -66,11 +66,19 @@ GMenuTreeDirectory *gmenu_tree_iter_get_directory   (GMenuTreeIter *iter);
 GMenuTreeEntry     *gmenu_tree_iter_get_entry       (GMenuTreeIter *iter);
 
 GDesktopAppInfo *gmenu_tree_entry_get_app_info (GMenuTreeEntry *entry);
+
+typedef void (*GCallback)(GMenuTree *, void *);
+unsigned long g_signal_connect_data(void *obj, const char *sig,
+  GCallback handler, void *data);
 ]]
 
 local L = ffi.load("libgnome-menu-3.so")
 
 local _M = {}
+
+local function g_signal_connect(obj, sig, f, data)
+  return L.g_signal_connect_data(obj, sig, ffi.cast("GCallback", f), data)
+end
 
 local function get_app_info(app_info, tag)
     local s = L.g_desktop_app_info_get_string(app_info, tag)
@@ -81,7 +89,8 @@ local function get_app_info(app_info, tag)
     end
 end
 
-local function parse_directory(directory, data)
+local function parse_directory(directory)
+    local data = {}
     local iter = L.gmenu_tree_directory_iter(directory);
     if iter then
         local t = L.gmenu_tree_iter_next(iter)
@@ -95,20 +104,12 @@ local function parse_directory(directory, data)
                     Name = (name ~= nil) and ffi.string(name) or "Undefined",
                     Icon = (icon ~= nil) and ffi.string(L.g_icon_to_string(icon)) or ""
                 }
-                if not data.Items then
-                    data.Items = {}
-                end
-                table.insert(data.Items, item)
-                parse_directory(dir, item )
+                item.Items = parse_directory(dir)
+                table.insert(data, item)
             elseif t == L.GMENU_TREE_ITEM_ENTRY then
                 local entry = L.gmenu_tree_iter_get_entry(iter)
                 local app_info = L.gmenu_tree_entry_get_app_info(entry)
-
-                if not data.Items then
-                    data.Items = {}
-                end
-
-                table.insert(data.Items, {
+                table.insert(data, {
                     Type = "app",
                     Name = get_app_info(app_info, "Name"),
                     Icon = get_app_info(app_info, "Icon"),
@@ -116,35 +117,54 @@ local function parse_directory(directory, data)
                     Terminal = get_app_info(app_info, "Terminal")
                 })
             elseif t == L.GMENU_TREE_ITEM_SEPARATOR then
-                if not data.Items then
-                    data.Items = {}
-                end
-                table.insert(data.Items, { Type = "separator" })
+                table.insert(data, { Type = "separator" })
             else
---                dbg.dump(ffi.typeof(t))
+                print("Unknown item type: " .. ffi.typeof(t))
             end
             t = L.gmenu_tree_iter_next(iter)
         end
     end
+    return data
 end
 
---- To show OnlyShowIn items, set XDG_CURRENT_DESKTOP environment variable
+--- Create menu by either full path to menu file, e.g. "/etc/xdg/menus/gnome-applications.menu"
+--  or just menu file name, e.g. "gnome-applications.menu"
+--  To show OnlyShowIn items, set XDG_CURRENT_DESKTOP environment variable
 --  https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#key-onlyshowin
-function _M.new_for_path(path, flags)
+function _M:new(path, flags, callback)
     local menu = { Type = "menu", Name = "Applications", Items = {} }
 
     if not path then
         return menu, "No file path is defined"
     end
 
-    local tree = L.gmenu_tree_new_for_path(path, L.GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS+L.GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED)
-    local loaded = L.gmenu_tree_load_sync(tree, nil)
-    -- TODO: get error message
-     if loaded ~= 1 then
-        return menu, "Failed to load menu for path: '" .. path .."'"
+    local flags = flags or L.GMENU_TREE_FLAGS_SHOW_ALL_SEPARATORS+L.GMENU_TREE_FLAGS_INCLUDE_UNALLOCATED
+
+    if path:find('^/') then
+        menu.tree = L.gmenu_tree_new_for_path(path, flags)
+    else
+        menu.tree = L.gmenu_tree_new(path, flags)
     end
 
-    parse_directory(L.gmenu_tree_get_root_directory(tree), menu)
+    local err
+    local loaded = L.gmenu_tree_load_sync(menu.tree, err)
+    if loaded ~= 1 then
+        return menu, "Failed to load menu for path: '" .. path .."': " .. err
+    end
+
+    if callback then
+        g_signal_connect(menu.tree, "changed", function(w, p)
+                print("Menu tree handler fired")
+                local err
+                local loaded = L.gmenu_tree_load_sync(w, err)
+
+                if not err then
+                    menu.Items = parse_directory(L.gmenu_tree_get_root_directory(w))
+                    callback()
+                end
+            end, NULL);
+    end
+    menu.Items = parse_directory(L.gmenu_tree_get_root_directory(menu.tree))
 
     return menu, nil
 end
