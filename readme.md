@@ -22,3 +22,5 @@ cp -ar /tmp/awesomewm-modules/gears ~/.config/awesome/
 ### Classes
 
 **[gears.filesystem.inotifywatch](gears/filesystem/inotifywatch.md)** &nbsp;&nbsp; Watch filesystem for changes
+
+**[gears.xdg.icon_theme](gears/xdg/icon_theme.md)** &nbsp;&nbsp; Exploring icon theme using lgi.Gtk
